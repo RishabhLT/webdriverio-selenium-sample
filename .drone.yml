@@ -15,9 +15,9 @@ steps:
   image: lambdatest/tunnel
   environment:
     PASSWORD:
-      from_secret: LT_ACCESS_KEY
+      from_secret: LT_key
     USERNAME:
-      from_secret: LT_USERNAME
+      from_secret: LT_user
   commands:
   - ls
   - apt-get update && \
@@ -29,6 +29,7 @@ steps:
   - chmod +x /LT
   - ls
   - /LT -user $USERNAME -key $PASSWORD &
+  - sleep 100
   
 - name: SampleTest
   image: node
