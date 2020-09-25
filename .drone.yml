@@ -1,5 +1,5 @@
 kind: pipeline
-name: Build
+name: DroneCIDemo
 trigger:
   event:
   - push
@@ -23,7 +23,7 @@ steps:
   - ls
   - /LT -user $USERNAME -key $PASSWORD &
   
-- name: Test
+- name: SampleTest
   image: node
   environment:
     PASSWORD:
