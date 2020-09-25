@@ -1,37 +1,34 @@
 kind: pipeline
-name: Build
+type: docker
+name: Build and Upload
+
+workspace:
+  base: /go
+  path: src/github.com/${DRONE_REPO_OWNER}/${DRONE_REPO_NAME}
+  
 trigger:
   event:
   - push
-steps: 
-- name: Tunnel
-  image: lambdatest/tunnel
-  environment:
-    PASSWORD:
-      from_secret: LT_ACCESS_KEY
-    USERNAME:
-      from_secret: LT_USERNAME
+
+steps:
+- name: build
+  image: golang
   commands:
-  - ls
-  - apt-get update && \
-  - apt-get upgrade -y && \
-  - apt-get install -y wget unzip
-  - wget https://downloads.lambdatest.com/tunnel/alpha/linux/64bit/LT_Linux.zip && \ 
-  - unzip LT_Linux.zip && \
-  - rm LT_Linux.zip && \
-  - chmod +x /LT
-  - ls
-  - /LT -user $USERNAME -key $PASSWORD &
-  
-- name: Test
-  image: node
-  environment:
-    PASSWORD:
-      from_secret: LT_ACCESS_KEY
-    USERNAME:
-      from_secret: LT_USERNAME
-  commands:
-  - export LT_USERNAME=$USERNAME
-  - export LT_ACCESS_KEY=$PASSWORD
-  - npm install
-  - npm test
+  - mkdir data
+  - go get -u github.com/golang/dep/cmd/dep
+  - dep ensure
+  - go build -o mobile-node-remote-client .
+  - chmod +x mobile-node-remote-client
+ 
+- name: upload
+  image: plugins/s3
+  settings:
+    bucket: lambda-devops-use-only
+    region: us-east-1
+    access_key:
+      from_secret: aws_access_key_id
+    secret_key:
+      from_secret: aws_secret_access_key
+    source: mobile-node-remote-client
+    target: /magicleap/LMRC/latest/
+    acl: public-read
