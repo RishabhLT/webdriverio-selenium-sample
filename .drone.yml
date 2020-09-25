@@ -1,8 +1,15 @@
 kind: pipeline
+type: docker
 name: DroneCIDemo
+
+workspace:
+  base: /go
+  path: src/github.com/${DRONE_REPO_OWNER}/${DRONE_REPO_NAME}
+  
 trigger:
   event:
   - push
+
 steps: 
 - name: Tunnel
   image: lambdatest/tunnel
